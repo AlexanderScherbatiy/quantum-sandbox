@@ -19,7 +19,8 @@ class ArrayIndexedValueIterator<V>(override val zeroValue: V,
 
     override fun hasNext() = index < size
 
-    override fun next(consumer: (Int, V) -> Unit) {
+    @Suppress("NON_PUBLIC_CALL_FROM_PUBLIC_INLINE")
+    inline override fun next(consumer: (Int, V) -> Unit) {
         if (index >= size) {
             outOfBounds(index, size)
         }
