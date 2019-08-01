@@ -119,6 +119,36 @@ open class IndexedValueIteratorBenchmark {
 
         return sum
     }
+
+    @Benchmark
+    fun testIteratorExtensionFunction(): Double {
+        var sum = 0.0
+
+        val iter = vector.iterator()
+
+        iter.iterate { index, value ->
+            if (index % 3 == 0) {
+                sum += value
+            }
+        }
+
+        return sum
+    }
+
+    @Benchmark
+    fun testInlineIteratorExtensionFunction(): Double {
+        var sum = 0.0
+
+        val iter = vector.iterator()
+
+        iter.inlineIterate { index, value ->
+            if (index % 3 == 0) {
+                sum += value
+            }
+        }
+
+        return sum
+    }
 }
 
 data class IndexedValue<T>(val index: Int, val value: T)
@@ -172,5 +202,19 @@ class InlineArrayIndexedValueIterator<V>(override val zeroValue: V,
     @Suppress("NON_PUBLIC_CALL_FROM_PUBLIC_INLINE")
     inline override fun next(consumer: (Int, V) -> Unit) {
         consumer(index, values[index++])
+    }
+}
+
+fun <T> Iterator<T>.iterate(consumer: (Int, T) -> Unit) {
+    var index = 0
+    for (value in iterator()) {
+        consumer(index++, value)
+    }
+}
+
+inline fun <T> Iterator<T>.inlineIterate(consumer: (Int, T) -> Unit) {
+    var index = 0
+    for (value in iterator()) {
+        consumer(index++, value)
     }
 }
