@@ -21,6 +21,7 @@ open class IndexedValueIteratorBenchmark {
     private var indexedValueIterator = ArrayIndexedValueIterator(0.0)
     private var inlineIndexedValueIterator = InlineArrayIndexedValueIterator(0.0)
     private var baseInlineIndexedValueIterator: IndexedValueIterator<Double> = ArrayIndexedValueIterator(0.0)
+    private var iteratorWithIndex: IteratorWithIndex<Double> = ArrayIteratorWithIndex()
 
 
     @Setup(Level.Invocation)
@@ -33,6 +34,7 @@ open class IndexedValueIteratorBenchmark {
         indexedValueIterator = ArrayIndexedValueIterator(0.0, *vector)
         inlineIndexedValueIterator = InlineArrayIndexedValueIterator(0.0, *vector)
         baseInlineIndexedValueIterator = InlineArrayIndexedValueIterator(0.0, *vector)
+        iteratorWithIndex = ArrayIteratorWithIndex(*vector)
     }
 
     @Benchmark
@@ -149,6 +151,22 @@ open class IndexedValueIteratorBenchmark {
 
         return sum
     }
+
+    @Benchmark
+    fun testIteratorWithIndex(): Double {
+        var sum = 0.0
+
+        while (iteratorWithIndex.hasNext()) {
+            val index= iteratorWithIndex.index()
+            val value = iteratorWithIndex.next()
+
+            if (index % 3 == 0) {
+                sum += value
+            }
+        }
+
+        return sum
+    }
 }
 
 data class IndexedValue<T>(val index: Int, val value: T)
@@ -217,4 +235,17 @@ inline fun <T> Iterator<T>.inlineIterate(consumer: (Int, T) -> Unit) {
     for (value in iterator()) {
         consumer(index++, value)
     }
+}
+
+interface IteratorWithIndex<T> : Iterator<T> {
+    fun index(): Int
+}
+
+class ArrayIteratorWithIndex<T>(private vararg val values: T) : IteratorWithIndex<T> {
+
+    private var index = 0
+
+    override fun index() = index
+    override fun hasNext() = index < values.size
+    override fun next() = values[index++]
 }
